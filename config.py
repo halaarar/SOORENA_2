@@ -19,9 +19,16 @@ TEST_FILE = f"{PROCESSED_DATA_DIR}/test.csv"
 MODEL_NAME = "microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext"
 MAX_LENGTH = 512
 
+# Training hyperparameters
+BATCH_SIZE = 16
+LEARNING_RATE = 2e-5
+
+
 # Stage 1 (binary)
 STAGE1_MODEL_PATH = f"{MODEL_DIR}/stage1_best.pt"
 STAGE1_NUM_LABELS = 2
+STAGE1_EPOCHS = 3
+STAGE1_WARMUP_RATIO = 0.1
 
 # Stage 2 (7-class)
 STAGE2_MODEL_PATH = f"{MODEL_DIR}/stage2_best.pt"
@@ -45,3 +52,9 @@ ID_TO_LABEL = {v: k for k, v in LABEL_TO_ID.items()}
 
 # Random seed for reproducibility
 RANDOM_SEED = 42
+
+
+# Data split ratios
+TRAIN_RATIO = 0.7
+VAL_RATIO = 0.15
+TEST_RATIO = 0.15
