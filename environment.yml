@@ -1,0 +1,41 @@
+name: autoregulatory
+channels:
+  - conda-forge
+channel_priority: strict
+
+dependencies:
+  - python=3.11
+  - pip
+  - ipykernel
+  - jupyterlab
+  - matplotlib
+  - pandas
+  - seaborn
+  - scikit-learn
+  - nltk
+  - spacy
+  - plotly
+  - ipywidgets
+  - jupyter-dash
+  - pyreadr
+  - tqdm
+  - nb_conda_kernels
+  - numpy
+  - regex
+  - tokenizers
+  - safetensors
+  - psutil
+  # leave torch and protobuf out; install torch per-platform later
+  - pip:
+      - transformers>=4.41
+      - datasets
+      - accelerate
+      - torch-summary
+      - kaleido
+      - pyppeteer
+      - iterative-stratification
+      - evaluate
+      - wandb
+      - tensorboard
+      - torchmetrics
+      # do NOT add sentence-transformers here; install it after torch
