@@ -107,9 +107,7 @@ def normalize_terms(terms):
         'autoregulatory': 'autoregulation',
         'autoinhibitory': 'autoinhibition',
         'autocatalysis': 'autocatalytic',
-        'autoinduction': 'autoinducer',
-        'autokinase': 'autophosphorylation',
-        'autophosphatase': 'autophosphorylation',
+        'autoinduction': 'autoinducer'
     }
     
     normalized = []
