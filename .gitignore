@@ -1,16 +1,14 @@
-
-# Data files (too large for git)
-data/raw/
-data/processed/*.csv
-*.rds
-
-# Model files (too large for git)
-models/*.pt
-
-# Python
+# Ignore system artifacts
+.DS_Store
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
 
-# OS
-.DS_Storedata/predictions_for_app.csv
+# Ignore raw scratch data only
+data/raw/
+
+# Allow processed data to be tracked by Git LFS
+!data/**
+
+# Ignore large model binaries unless needed
+models/*.pt
