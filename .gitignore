@@ -9,6 +9,7 @@ data/raw/
 
 # Allow all processed data to be tracked by LFS
 !data/**
+!shiny_app/data/**
 
 # Ignore large model binaries unless needed
 models/*.pt
