@@ -1,13 +1,13 @@
-# Ignore system artifacts
+# Ignore OS files
 .DS_Store
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
 
-# Ignore raw scratch data only
+# Ignore only raw scratch data
 data/raw/
 
-# Allow processed data to be tracked by Git LFS
+# Allow all processed data to be tracked by LFS
 !data/**
 
 # Ignore large model binaries unless needed
