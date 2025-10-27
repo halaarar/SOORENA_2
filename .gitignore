@@ -13,4 +13,4 @@ __pycache__/
 .ipynb_checkpoints/
 
 # OS
-.DS_Store
+.DS_Storedata/predictions_for_app.csv
