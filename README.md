@@ -70,7 +70,7 @@ This project aims to develop a **text-mining-based approach** to extract, integr
 *Adapted from: [SnapShot: Network Motifs](https://doi.org/10.1016/j.cell.2010.09.050), Oren Shoval & Uri Alon, Cell, 2010.*
 
 
-## 2 Environment Setup
+## 2. Environment Setup
 
 Create and activate environment:
 
