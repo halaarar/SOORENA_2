@@ -70,7 +70,7 @@ This project aims to develop a **text-mining-based approach** to extract, integr
 *Adapted from: [SnapShot: Network Motifs](https://doi.org/10.1016/j.cell.2010.09.050), Oren Shoval & Uri Alon, Cell, 2010.*
 
 
-## 2 Setup
+## 2 Environment Setup
 
 Create and activate environment:
 
@@ -85,56 +85,91 @@ Install dependencies:
 pip install -r requirements.txt
 ```
  
-## 3 Process
+## 3. Important: Download Large Data Files (Git LFS)
 
-1. Data preparation
+This repo uses Git LFS for large datasets and prediction files.
+After cloning the repository, you must run
+
+```bash
+git lfs install
+git lfs pull
+```
+
+If skipped, data files appear as small text placeholders instead of real datasets.
+
+To verify files downloaded correctly:
+
+```bash
+ls -lh data/raw
+ls -lh results
+```
+
+## 4. Quick Shiny App Launch:
+
+```bash
+8. Run Shiny App
+
+```bash
+cd ~/Desktop/SOORENA_2/shiny_app
+Rscript -e "shiny::runApp('app.R')"
+```
+
+## If data files are missing, follow the full pipeline below to generate them: 
+
+### 5. Processing and Modeling Pipeline
+
+
+Step 1 — Data preparation
 
 ```bash
 python prepare_data.py
 ```
 
-
-2. Train Stage 1 (~30 min):
+Step 2 — Train Stage 1 (binary classification)
 
 ```bash
 python train_stage1.py
 ```
 
-3. Train Stage 2 (~40 min):
+Step 3 — Train Stage 2 (seven-way multi-class)
 
 ```bash
 python train_stage2.py
 ```
 
-4. Generate reports:
+Step 4 — Evaluate trained models
 
 ```bash
 python evaluate.py
 ```
 
-5. Test prediction:
+
+Step 5 — Run single-paper prediction test
 
 ```bash
 python predict.py
 ```
 
-
-6. Create results/unseen_predictions.csv for unseen data prediction:
+Step 6 — Predict on full unlabeled PubMed subset
 
 ```bash
 python batch_predict.py
 ```
 
-
-7. Merge Predictions for final submission:
+Step 7 — Merge predictions + metadata for Shiny app
 
 ```bash
 python merge_predictions.py
-``` 
+```
 
-8. Run Shiny App
+Outputs:
+shiny_app/data/predictions_for_app.csv
+
+### 5. Shiny App (Interactive Exploration)
+
+To launch the interface:
 
 ```bash
-cd ~/Desktop/SOORENA_2/shiny_app
+cd shiny_app
 Rscript -e "shiny::runApp('app.R')"
 ```
