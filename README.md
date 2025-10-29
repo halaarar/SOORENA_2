@@ -70,7 +70,13 @@ This project aims to develop a **text-mining-based approach** to extract, integr
 *Adapted from: [SnapShot: Network Motifs](https://doi.org/10.1016/j.cell.2010.09.050), Oren Shoval & Uri Alon, Cell, 2010.*
 
 
-## 2. Environment Setup
+## 2. Clone Repository & Setup Environment 
+
+Clone the repository and navigate into it:
+
+```bash
+git clone https://github.com/halaarar/SOORENA_2.git
+```
 
 Create and activate environment:
 
@@ -84,8 +90,20 @@ Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
- 
-## 3. Important: Download Large Data Files (Git LFS)
+
+## 3. Quick Shiny App Launch:
+
+
+8. Run Shiny App
+
+```bash
+cd ~/Desktop/SOORENA_2/shiny_app
+Rscript -e "shiny::runApp('app.R')"
+```
+
+## If data files are missing, follow the full pipeline below to generate them:
+
+## 4. Important: Download Large Data Files (Git LFS)
 
 This repo uses Git LFS for large datasets and prediction files.
 After cloning the repository, you must run
@@ -103,18 +121,6 @@ To verify files downloaded correctly:
 ls -lh data/raw
 ls -lh results
 ```
-
-## 4. Quick Shiny App Launch:
-
-```bash
-8. Run Shiny App
-
-```bash
-cd ~/Desktop/SOORENA_2/shiny_app
-Rscript -e "shiny::runApp('app.R')"
-```
-
-## If data files are missing, follow the full pipeline below to generate them: 
 
 ### 5. Processing and Modeling Pipeline
 
