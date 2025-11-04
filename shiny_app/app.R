@@ -219,10 +219,10 @@ ui <- navbarPage(
           }
           .dataTables_wrapper {
             background-color: #ffffff;
-            padding: 10px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin: 0 30px 20px 30px;
+            margin: 0 0 20px 0;
           }
         "))
       ),
@@ -272,7 +272,7 @@ ui <- navbarPage(
         ),
         
         # Display Table
-        div(style = "margin: 0 30px;",
+        div(style = "margin: 0 30px 20px 30px;",
             DTOutput("result_table"))
       )
     ),
