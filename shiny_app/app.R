@@ -158,6 +158,19 @@ get_ontology_path <- function(key) {
   "Autoregulatory Mechanisms (Root)"
 }
 
+# Source display labels.
+# The database stores Source = "Predicted"; users see a phrase that better
+# describes what the pipeline does. Change PREDICTED_LABEL to reword it
+# everywhere (filter, table, CSV export, statistics chart) at once.
+PREDICTED_LABEL <- "AI-assisted curation"
+
+source_display_map <- c("Predicted" = PREDICTED_LABEL)
+
+display_source <- function(x) {
+  out <- unname(source_display_map[as.character(x)])
+  ifelse(is.na(out), as.character(x), out)
+}
+
 
 # Define UI
 # Header UI reused across all tabs
@@ -188,6 +201,16 @@ ui <- navbarPage(
         tags$style(HTML("
           body {
             background-color: #f9f9f9;
+          }
+          /* Truncated cells reveal their full value on mouseover */
+          .truncated-cell {
+            border-bottom: 1px dotted #9aa5b1;
+            cursor: help;
+          }
+          .view-btn {
+            padding: 0 2px;
+            font-size: 0.85em;
+            white-space: nowrap;
           }.navbar {
             background-color:  #f2f2f2;
             border-color: #1f4e79;
@@ -928,12 +951,10 @@ ui <- navbarPage(
 			                 selectInput(
 			                   "source_mode",
 			                   "Source of Autoregulation Data",
-			                   choices = c("All" = "all",
-			                               "UniProt" = "UniProt",
-			                               "Predicted" = "Predicted",
-			                               "OmniPath" = "OmniPath",
-			                               "SIGNOR" = "SIGNOR",
-			                               "TRRUST" = "TRRUST"),
+			                   choices = setNames(
+			                     c("all", "UniProt", "Predicted", "OmniPath", "SIGNOR", "TRRUST"),
+			                     c("All", "UniProt", PREDICTED_LABEL, "OmniPath", "SIGNOR", "TRRUST")
+			                   ),
 			                   selected = "all"
 			                 )))
 			    ),
@@ -2010,9 +2031,34 @@ server <- function(input, output, session) {
     list(where = query, params = params)
   }
 
+  # Full value, escaped, never truncated. Used for fields short enough to
+  # display in their entirety (see field-length survey in the commit message).
+  plain_cell <- function(text) {
+    vapply(text, function(val) {
+      if (is.na(val) || trimws(val) == "" || trimws(val) == "Unknown") return("")
+      htmltools::htmlEscape(trimws(val))
+    }, character(1), USE.NAMES = FALSE)
+  }
+
+  # Truncated, with the full value revealed on mouseover via the native title
+  # tooltip. No click, no pop-up. Used for the multi-valued fields, which can
+  # be thousands of characters long when several values are joined.
+  tooltip_cell <- function(text, max_chars) {
+    vapply(text, function(val) {
+      if (is.na(val) || trimws(val) == "" || trimws(val) == "Unknown") return("")
+      trimmed <- trimws(val)
+      if (nchar(trimmed) <= max_chars) return(htmltools::htmlEscape(trimmed))
+      paste0(
+        '<span class="truncated-cell" title="',
+        htmltools::htmlEscape(trimmed, attribute = TRUE), '">',
+        htmltools::htmlEscape(substr(trimmed, 1, max_chars)), "\u2026</span>"
+      )
+    }, character(1), USE.NAMES = FALSE)
+  }
+
   # Simple helper to safely truncate and escape text while keeping the magnifier button
   # Now stores AC identifier instead of full text to avoid HTML attribute length limits
-  safe_cell <- function(text, max_chars, field, row_ids = NULL) {
+  safe_cell <- function(text, max_chars, field, row_ids = NULL, label = "Show more") {
     vapply(seq_along(text), function(i) {
       val <- text[i]
       if (is.na(val) || trimws(val) == "" || trimws(val) == "Unknown") return("")
@@ -2025,7 +2071,7 @@ server <- function(input, output, session) {
         paste0(
           truncated, "... ",
           '<button class=\"btn btn-link btn-sm view-btn\" data-field=\"', field,
-          '\" data-row-id=\"', row_id, '\">🔍</button>'
+          '\" data-row-id=\"', row_id, '\">', label, '</button>'
         )
       } else {
         escaped_full
@@ -2187,7 +2233,7 @@ server <- function(input, output, session) {
         "Protein Name",
         "Gene Name",
         "Protein ID",
-        "OS"
+        "Organism"
       )
       keep <- keep[keep %in% colnames(data)]
       data <- data[, keep, drop = FALSE]
@@ -2380,7 +2426,7 @@ server <- function(input, output, session) {
 		      "Protein Name",
 		      "Gene Name",
 		      "Protein ID",
-		      "OS"
+		      "Organism"
 		    )
 
 		    sort_map <- list(
@@ -2433,6 +2479,14 @@ server <- function(input, output, session) {
 	    colnames(result) <- gsub("_", " ", colnames(result))
 	    if ("UniProtKB accessions" %in% colnames(result)) {
 	      colnames(result)[colnames(result) == "UniProtKB accessions"] <- "UniProt AC"
+	    }
+	    # The database column is OS; it is shown to users as "Organism"
+	    if ("OS" %in% colnames(result)) {
+	      colnames(result)[colnames(result) == "OS"] <- "Organism"
+	    }
+	    # Source is stored as "Predicted"; show the fuller description instead
+	    if ("Source" %in% colnames(result)) {
+	      result$Source <- display_source(result$Source)
 	    }
 
 	    # Replace Autoregulatory Type 'NA' and 'none' values with 'non-autoregulatory'
@@ -2580,7 +2634,7 @@ server <- function(input, output, session) {
 	    }
 
 	    if (!is.null(input$os) && length(input$os) > 0) {
-	      parts <- c(parts, summarize_values("OS", input$os, max_items = 1))
+	      parts <- c(parts, summarize_values("Organism", input$os, max_items = 1))
 	    }
 
 	    if (!is.null(input$pmid) && nzchar(input$pmid)) {
@@ -2632,9 +2686,13 @@ server <- function(input, output, session) {
 	      res <- data.frame(label = character(0), n = numeric(0))
 	    }
 		    res$label <- ifelse(is.na(res$label) | res$label == "", "Unknown", res$label)
-		    res$label <- factor(res$label, levels = c("UniProt", "Predicted", "OmniPath", "SIGNOR", "TRRUST", "Unknown"))
+		    res$label <- display_source(res$label)
+		    res$label <- factor(res$label, levels = c("UniProt", PREDICTED_LABEL, "OmniPath", "SIGNOR", "TRRUST", "Unknown"))
 		    res <- res[order(res$label), ]
-		    color_map <- c("UniProt" = "#d97742", "Predicted" = "#1a2332", "OmniPath" = "#3498db", "SIGNOR" = "#27ae60", "TRRUST" = "#9b59b6", "Unknown" = "#94a3b8")
+		    color_map <- setNames(
+		      c("#d97742", "#1a2332", "#3498db", "#27ae60", "#9b59b6", "#94a3b8"),
+		      c("UniProt", PREDICTED_LABEL, "OmniPath", "SIGNOR", "TRRUST", "Unknown")
+		    )
 		    text_size <- if (is_mobile) 10 else 12
 		    text_info <- if (is_mobile) "percent" else "label+percent"
 
@@ -3159,7 +3217,7 @@ server <- function(input, output, session) {
     data.frame(
       Mechanism = c("Autophosphorylation", "Autoregulation", "Autocatalytic",
                     "Autoinhibition", "Autoubiquitination", "Autolysis", "Autoinducer"),
-      Precision = c("99.0%", "92.3%", "91.7%", "94.4%", "85.9%", "100.0%", "100.0%"),
+      Precision = c("99.0%", "92.3%", "91.7%", "94.4%", "85.0%", "100.0%", "100.0%"),
       Recall = c("92.5%", "100.0%", "100.0%", "94.4%", "100.0%", "100.0%", "100.0%"),
       F1_Score = c("95.6%", "96.0%", "95.6%", "94.4%", "91.9%", "100.0%", "100.0%"),
       Support = c("107", "24", "22", "18", "17", "6", "6")
@@ -3198,7 +3256,7 @@ server <- function(input, output, session) {
 	    `Protein Name`,
 	    `Gene Name`,
 	    `Protein ID`,
-	    OS
+	    Organism
  	  )
 
 	  # Store original AC identifiers for magnifier button lookups
@@ -3220,30 +3278,30 @@ server <- function(input, output, session) {
 	    sapply(seq_along(data[[uniprot_col]]), function(i) {
 	      ac <- data[[uniprot_col]][i]
 	      first_ac <- trimws(strsplit(ac, ",")[[1]][1])
-      full_ac <- safe_cell(ac, 30, uniprot_col, row_acs[i])
+      full_ac <- tooltip_cell(ac, 40)
       paste0('<a href="https://www.uniprot.org/uniprotkb/', first_ac,
              '" target="_blank" style="color: #0366d6; text-decoration: none;">',
              full_ac, '</a>')
     }),
-    safe_cell(data[[uniprot_col]], 30, uniprot_col, row_acs)
+    tooltip_cell(data[[uniprot_col]], 40)
 	  )
 
-	  data$AC <- safe_cell(data$AC, 25, "AC", row_acs)
-	  data$`Protein Name` <- safe_cell(data$`Protein Name`, 50, "Protein Name", row_acs)
-	  data$`Gene Name` <- safe_cell(data$`Gene Name`, 30, "Gene Name", row_acs)
+	  data$AC <- plain_cell(data$AC)
+	  data$`Protein Name` <- tooltip_cell(data$`Protein Name`, 60)
+	  data$`Gene Name` <- plain_cell(data$`Gene Name`)
 
   # Clean up Protein ID: hide "NA_####" entries (show blank instead)
   data$`Protein ID` <- ifelse(
     grepl("^NA_", data$`Protein ID`),
     "",  # Show blank for NA_#### entries
-    safe_cell(data$`Protein ID`, 25, "Protein ID", row_acs)
+    tooltip_cell(data$`Protein ID`, 40)
 	  )
 
-	  data$OS <- safe_cell(data$OS, 40, "OS", row_acs)
-	  data$Title <- safe_cell(data$Title, 50, "Title", row_acs)
-	  data$Abstract <- safe_cell(data$Abstract, 50, "Abstract", row_acs)
-	  data$Journal <- safe_cell(data$Journal, 40, "Journal", row_acs)
-	  data$Authors <- safe_cell(data$Authors, 50, "Authors", row_acs)
+	  data$Organism <- plain_cell(data$Organism)
+	  data$Title <- plain_cell(data$Title)
+	  data$Abstract <- safe_cell(data$Abstract, 250, "Abstract", row_acs, "Show abstract")
+	  data$Journal <- plain_cell(data$Journal)
+	  data$Authors <- tooltip_cell(data$Authors, 80)
 
   getOntologyDetails <- function(type) {
     if (is.na(type) || type == "non-autoregulatory" || trimws(type) == "") {
@@ -3281,7 +3339,7 @@ server <- function(input, output, session) {
       safe_types,
       ' <button class="btn btn-link btn-sm view-btn" data-field="Autoregulatory Type" data-text="',
       htmltools::htmlEscape(vapply(type_values, getOntologyDetails, character(1))),
-      '"><span style="font-size:14px;">🔍</span></button>'
+      '">Ontology</button>'
     )
   )
 
@@ -3320,7 +3378,7 @@ server <- function(input, output, session) {
       headerCallback = JS(
         "function(thead, data, start, end, display) {",
         "  var tooltips = {",
-        "    'AC': 'SOORENA accession ID. Format: SOORENA-{Source}-{PMID}-{Counter}. Source codes: U=UniProt, P=Predicted, O=OmniPath, S=SIGNOR, T=TRRUST',",
+        "    'AC': 'SOORENA accession ID. Format: SOORENA-{Source}-{PMID}-{Counter}. Source codes: U=UniProt, P=AI-assisted curation, O=OmniPath, S=SIGNOR, T=TRRUST',",
         "    'PMID': 'PubMed identifier. Click to view the publication on PubMed',",
         "    'UniProt AC': 'UniProtKB accession number(s). Click to view protein entry on UniProt. May contain multiple comma-separated accessions',",
         "    'Autoregulatory Type': 'Classification of autoregulatory mechanism (e.g., Autophosphorylation, Autoubiquitination). Click the magnifying glass icon for detailed ontology information',",
@@ -3333,11 +3391,11 @@ server <- function(input, output, session) {
         "    'Authors': 'List of publication authors',",
         "    'Year': 'Publication year',",
         "    'Month': 'Publication month',",
-        "    'Source': 'Source of autoregulation data: UniProt (curated), Predicted (ML predictions), OmniPath/SIGNOR/TRRUST (external databases)',",
+        "    'Source': 'Origin of the record: AI-assisted curation (identified from the literature by the SOORENA two-stage model), UniProt (expert-curated), OmniPath/SIGNOR/TRRUST (external curated databases)',",
         "    'Protein Name': 'Full name of the protein from UniProt',",
         "    'Gene Name': 'Gene symbol for the protein',",
         "    'Protein ID': 'UniProt protein identifier',",
-        "    'OS': 'Organism/species (e.g., Homo sapiens, Mus musculus)'",
+        "    'Organism': 'Organism/species (e.g., Homo sapiens, Mus musculus)'",
         "  };",
         "  ",
         "  // Add CSS for info icon (only once)",
@@ -3440,7 +3498,7 @@ server <- function(input, output, session) {
 
   # Updates Table Data
   patch_notes_data <- data.frame(
-    Version = c("0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.5", "0.0.6", "0.0.7", "0.0.8", "0.0.9", "0.0.10", "0.0.11", "0.0.12", "0.0.13", "0.0.14"),
+    Version = c("0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.5", "0.0.6", "0.0.7", "0.0.8", "0.0.9", "0.0.10", "0.0.11", "0.0.12", "0.0.13", "0.0.14", "0.0.15"),
     Description = c(
       paste(
         "<ul>",
@@ -3569,9 +3627,17 @@ server <- function(input, output, session) {
         "<li><strong>External Mechanism Mapping:</strong> Implemented systematic mapping of external database mechanism types to SOORENA ontology (e.g., phosphorylation → Autophosphorylation, cleavage → Autocatalytic, transcriptional → Autoregulation) for consistent classification across all data sources</li>",
         "<li><strong>Ontology Tab Updates:</strong> Added Autodephosphorylation (–), Autoacetylation (+), and Autodemethylation (±) to ontology hierarchy visualization with full ontology relations, definitions, synonyms, antonyms, and references</li>",
         "</ul>"
+      ),
+      paste(
+        "<ul>",
+        "<li><strong>Organism Column:</strong> The species column is now labelled &quot;Organism&quot; instead of &quot;OS&quot; in the results table, search filter, CSV export and column tooltips. Also fixes the magnifier pop-up for that column, which previously failed to look up the full value</li>",
+        "<li><strong>Evaluation Metrics Correction:</strong> Corrected the Stage 2 per-class precision for Autoubiquitination in the Statistics tab from 85.9% to 85.0% (17/20), consistent with the published confusion matrix and macro-precision of 94.6%</li>",
+        "<li><strong>Table Readability:</strong> Fields short enough to display in full (AC, Title, Journal, Organism, Gene Name) are no longer truncated. Longer multi-valued fields now reveal their full value on mouseover instead of requiring a click, and the abstract control is labelled &quot;Show abstract&quot; rather than a magnifier icon</li>",
+        "<li><strong>Source Terminology:</strong> Records identified by the SOORENA model are now labelled &quot;AI-assisted curation&quot; instead of &quot;Predicted&quot; across the search filter, results table, CSV export and statistics chart, to describe the method more accurately. The underlying data is unchanged and accession IDs are unaffected</li>",
+        "</ul>"
       )
     ),
-    Date = c("2025-05-29", "2025-06-01", "2025-06-04", "2025-06-19", "2025-06-24", "2025-07-02", "2025-07-10", "2025-11-04", "2025-12-07", "2025-12-08", "2025-12-27", "2026-01-12", "2026-01-13", "2026-01-15"),
+    Date = c("2025-05-29", "2025-06-01", "2025-06-04", "2025-06-19", "2025-06-24", "2025-07-02", "2025-07-10", "2025-11-04", "2025-12-07", "2025-12-08", "2025-12-27", "2026-01-12", "2026-01-13", "2026-01-15", "2026-09-14"),
     stringsAsFactors = FALSE
   )
 
