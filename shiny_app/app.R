@@ -158,6 +158,19 @@ get_ontology_path <- function(key) {
   "Autoregulatory Mechanisms (Root)"
 }
 
+# Source display labels.
+# The database stores Source = "Predicted"; users see a phrase that better
+# describes what the pipeline does. Change PREDICTED_LABEL to reword it
+# everywhere (filter, table, CSV export, statistics chart) at once.
+PREDICTED_LABEL <- "AI-assisted curation"
+
+source_display_map <- c("Predicted" = PREDICTED_LABEL)
+
+display_source <- function(x) {
+  out <- unname(source_display_map[as.character(x)])
+  ifelse(is.na(out), as.character(x), out)
+}
+
 
 # Define UI
 # Header UI reused across all tabs
@@ -928,12 +941,10 @@ ui <- navbarPage(
 			                 selectInput(
 			                   "source_mode",
 			                   "Source of Autoregulation Data",
-			                   choices = c("All" = "all",
-			                               "UniProt" = "UniProt",
-			                               "Predicted" = "Predicted",
-			                               "OmniPath" = "OmniPath",
-			                               "SIGNOR" = "SIGNOR",
-			                               "TRRUST" = "TRRUST"),
+			                   choices = setNames(
+			                     c("all", "UniProt", "Predicted", "OmniPath", "SIGNOR", "TRRUST"),
+			                     c("All", "UniProt", PREDICTED_LABEL, "OmniPath", "SIGNOR", "TRRUST")
+			                   ),
 			                   selected = "all"
 			                 )))
 			    ),
@@ -2438,6 +2449,10 @@ server <- function(input, output, session) {
 	    if ("OS" %in% colnames(result)) {
 	      colnames(result)[colnames(result) == "OS"] <- "Organism"
 	    }
+	    # Source is stored as "Predicted"; show the fuller description instead
+	    if ("Source" %in% colnames(result)) {
+	      result$Source <- display_source(result$Source)
+	    }
 
 	    # Replace Autoregulatory Type 'NA' and 'none' values with 'non-autoregulatory'
 	    if ("Autoregulatory Type" %in% colnames(result)) {
@@ -2636,9 +2651,13 @@ server <- function(input, output, session) {
 	      res <- data.frame(label = character(0), n = numeric(0))
 	    }
 		    res$label <- ifelse(is.na(res$label) | res$label == "", "Unknown", res$label)
-		    res$label <- factor(res$label, levels = c("UniProt", "Predicted", "OmniPath", "SIGNOR", "TRRUST", "Unknown"))
+		    res$label <- display_source(res$label)
+		    res$label <- factor(res$label, levels = c("UniProt", PREDICTED_LABEL, "OmniPath", "SIGNOR", "TRRUST", "Unknown"))
 		    res <- res[order(res$label), ]
-		    color_map <- c("UniProt" = "#d97742", "Predicted" = "#1a2332", "OmniPath" = "#3498db", "SIGNOR" = "#27ae60", "TRRUST" = "#9b59b6", "Unknown" = "#94a3b8")
+		    color_map <- setNames(
+		      c("#d97742", "#1a2332", "#3498db", "#27ae60", "#9b59b6", "#94a3b8"),
+		      c("UniProt", PREDICTED_LABEL, "OmniPath", "SIGNOR", "TRRUST", "Unknown")
+		    )
 		    text_size <- if (is_mobile) 10 else 12
 		    text_info <- if (is_mobile) "percent" else "label+percent"
 
@@ -3324,7 +3343,7 @@ server <- function(input, output, session) {
       headerCallback = JS(
         "function(thead, data, start, end, display) {",
         "  var tooltips = {",
-        "    'AC': 'SOORENA accession ID. Format: SOORENA-{Source}-{PMID}-{Counter}. Source codes: U=UniProt, P=Predicted, O=OmniPath, S=SIGNOR, T=TRRUST',",
+        "    'AC': 'SOORENA accession ID. Format: SOORENA-{Source}-{PMID}-{Counter}. Source codes: U=UniProt, P=AI-assisted curation, O=OmniPath, S=SIGNOR, T=TRRUST',",
         "    'PMID': 'PubMed identifier. Click to view the publication on PubMed',",
         "    'UniProt AC': 'UniProtKB accession number(s). Click to view protein entry on UniProt. May contain multiple comma-separated accessions',",
         "    'Autoregulatory Type': 'Classification of autoregulatory mechanism (e.g., Autophosphorylation, Autoubiquitination). Click the magnifying glass icon for detailed ontology information',",
@@ -3337,7 +3356,7 @@ server <- function(input, output, session) {
         "    'Authors': 'List of publication authors',",
         "    'Year': 'Publication year',",
         "    'Month': 'Publication month',",
-        "    'Source': 'Source of autoregulation data: UniProt (curated), Predicted (ML predictions), OmniPath/SIGNOR/TRRUST (external databases)',",
+        "    'Source': 'Origin of the record: AI-assisted curation (identified from the literature by the SOORENA two-stage model), UniProt (expert-curated), OmniPath/SIGNOR/TRRUST (external curated databases)',",
         "    'Protein Name': 'Full name of the protein from UniProt',",
         "    'Gene Name': 'Gene symbol for the protein',",
         "    'Protein ID': 'UniProt protein identifier',",
@@ -3444,7 +3463,7 @@ server <- function(input, output, session) {
 
   # Updates Table Data
   patch_notes_data <- data.frame(
-    Version = c("0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.5", "0.0.6", "0.0.7", "0.0.8", "0.0.9", "0.0.10", "0.0.11", "0.0.12", "0.0.13", "0.0.14"),
+    Version = c("0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.5", "0.0.6", "0.0.7", "0.0.8", "0.0.9", "0.0.10", "0.0.11", "0.0.12", "0.0.13", "0.0.14", "0.0.15"),
     Description = c(
       paste(
         "<ul>",
@@ -3573,9 +3592,16 @@ server <- function(input, output, session) {
         "<li><strong>External Mechanism Mapping:</strong> Implemented systematic mapping of external database mechanism types to SOORENA ontology (e.g., phosphorylation → Autophosphorylation, cleavage → Autocatalytic, transcriptional → Autoregulation) for consistent classification across all data sources</li>",
         "<li><strong>Ontology Tab Updates:</strong> Added Autodephosphorylation (–), Autoacetylation (+), and Autodemethylation (±) to ontology hierarchy visualization with full ontology relations, definitions, synonyms, antonyms, and references</li>",
         "</ul>"
+      ),
+      paste(
+        "<ul>",
+        "<li><strong>Organism Column:</strong> The species column is now labelled &quot;Organism&quot; instead of &quot;OS&quot; in the results table, search filter, CSV export and column tooltips. Also fixes the magnifier pop-up for that column, which previously failed to look up the full value</li>",
+        "<li><strong>Evaluation Metrics Correction:</strong> Corrected the Stage 2 per-class precision for Autoubiquitination in the Statistics tab from 85.9% to 85.0% (17/20), consistent with the published confusion matrix and macro-precision of 94.6%</li>",
+        "<li><strong>Source Terminology:</strong> Records identified by the SOORENA model are now labelled &quot;AI-assisted curation&quot; instead of &quot;Predicted&quot; across the search filter, results table, CSV export and statistics chart, to describe the method more accurately. The underlying data is unchanged and accession IDs are unaffected</li>",
+        "</ul>"
       )
     ),
-    Date = c("2025-05-29", "2025-06-01", "2025-06-04", "2025-06-19", "2025-06-24", "2025-07-02", "2025-07-10", "2025-11-04", "2025-12-07", "2025-12-08", "2025-12-27", "2026-01-12", "2026-01-13", "2026-01-15"),
+    Date = c("2025-05-29", "2025-06-01", "2025-06-04", "2025-06-19", "2025-06-24", "2025-07-02", "2025-07-10", "2025-11-04", "2025-12-07", "2025-12-08", "2025-12-27", "2026-01-12", "2026-01-13", "2026-01-15", "2026-09-14"),
     stringsAsFactors = FALSE
   )
 
