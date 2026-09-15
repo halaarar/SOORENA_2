@@ -2187,7 +2187,7 @@ server <- function(input, output, session) {
         "Protein Name",
         "Gene Name",
         "Protein ID",
-        "OS"
+        "Organism"
       )
       keep <- keep[keep %in% colnames(data)]
       data <- data[, keep, drop = FALSE]
@@ -2380,7 +2380,7 @@ server <- function(input, output, session) {
 		      "Protein Name",
 		      "Gene Name",
 		      "Protein ID",
-		      "OS"
+		      "Organism"
 		    )
 
 		    sort_map <- list(
@@ -2433,6 +2433,10 @@ server <- function(input, output, session) {
 	    colnames(result) <- gsub("_", " ", colnames(result))
 	    if ("UniProtKB accessions" %in% colnames(result)) {
 	      colnames(result)[colnames(result) == "UniProtKB accessions"] <- "UniProt AC"
+	    }
+	    # The database column is OS; it is shown to users as "Organism"
+	    if ("OS" %in% colnames(result)) {
+	      colnames(result)[colnames(result) == "OS"] <- "Organism"
 	    }
 
 	    # Replace Autoregulatory Type 'NA' and 'none' values with 'non-autoregulatory'
@@ -2580,7 +2584,7 @@ server <- function(input, output, session) {
 	    }
 
 	    if (!is.null(input$os) && length(input$os) > 0) {
-	      parts <- c(parts, summarize_values("OS", input$os, max_items = 1))
+	      parts <- c(parts, summarize_values("Organism", input$os, max_items = 1))
 	    }
 
 	    if (!is.null(input$pmid) && nzchar(input$pmid)) {
@@ -3159,7 +3163,7 @@ server <- function(input, output, session) {
     data.frame(
       Mechanism = c("Autophosphorylation", "Autoregulation", "Autocatalytic",
                     "Autoinhibition", "Autoubiquitination", "Autolysis", "Autoinducer"),
-      Precision = c("99.0%", "92.3%", "91.7%", "94.4%", "85.9%", "100.0%", "100.0%"),
+      Precision = c("99.0%", "92.3%", "91.7%", "94.4%", "85.0%", "100.0%", "100.0%"),
       Recall = c("92.5%", "100.0%", "100.0%", "94.4%", "100.0%", "100.0%", "100.0%"),
       F1_Score = c("95.6%", "96.0%", "95.6%", "94.4%", "91.9%", "100.0%", "100.0%"),
       Support = c("107", "24", "22", "18", "17", "6", "6")
@@ -3198,7 +3202,7 @@ server <- function(input, output, session) {
 	    `Protein Name`,
 	    `Gene Name`,
 	    `Protein ID`,
-	    OS
+	    Organism
  	  )
 
 	  # Store original AC identifiers for magnifier button lookups
@@ -3239,7 +3243,7 @@ server <- function(input, output, session) {
     safe_cell(data$`Protein ID`, 25, "Protein ID", row_acs)
 	  )
 
-	  data$OS <- safe_cell(data$OS, 40, "OS", row_acs)
+	  data$Organism <- safe_cell(data$Organism, 40, "Organism", row_acs)
 	  data$Title <- safe_cell(data$Title, 50, "Title", row_acs)
 	  data$Abstract <- safe_cell(data$Abstract, 50, "Abstract", row_acs)
 	  data$Journal <- safe_cell(data$Journal, 40, "Journal", row_acs)
@@ -3337,7 +3341,7 @@ server <- function(input, output, session) {
         "    'Protein Name': 'Full name of the protein from UniProt',",
         "    'Gene Name': 'Gene symbol for the protein',",
         "    'Protein ID': 'UniProt protein identifier',",
-        "    'OS': 'Organism/species (e.g., Homo sapiens, Mus musculus)'",
+        "    'Organism': 'Organism/species (e.g., Homo sapiens, Mus musculus)'",
         "  };",
         "  ",
         "  // Add CSS for info icon (only once)",
