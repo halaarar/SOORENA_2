@@ -1,7 +1,7 @@
 # =============================================================================
 # Figure: Section 3.5 — Comparing Source of Autoregulation Data
 # Four-panel patchwork:
-#   A: Source breakdown (SOORENA predictions vs curated databases)
+#   A: Source breakdown (SOORENA AI-assisted curation vs curated databases)
 #   B: Publication timeline (1970–2024)
 #   C: Top 10 journals
 #   D: Prediction confidence — Stage 1 (Mechanism) and Stage 2 (Type), faceted
@@ -40,9 +40,9 @@ base_theme <- theme_classic(base_size = 11) +
 # =============================================================================
 
 source_df <- data.frame(
-  Source = c("OmniPath", "TRRUST", "SIGNOR", "UniProt", "SOORENA\nPredicted"),
+  Source = c("OmniPath", "TRRUST", "SIGNOR", "UniProt", "AI-assisted\ncuration"),
   n      = c(20, 61, 995, 1332, 97657),
-  Type   = c("Curated", "Curated", "Curated", "Curated", "Predicted")
+  Type   = c("Curated", "Curated", "Curated", "Curated", "AI-assisted curation")
 ) %>%
   arrange(n) %>%
   mutate(
@@ -58,8 +58,9 @@ p_source <- ggplot(source_df, aes(x = n, y = Source, fill = Type)) +
     expand = expansion(mult = c(0, 0.3))
   ) +
   scale_fill_manual(
-    values = c("Predicted" = col_accent, "Curated" = col_curated),
-    labels = c("Curated databases", "SOORENA predictions")
+    values = c("AI-assisted curation" = col_accent, "Curated" = col_curated),
+    labels = c("Curated" = "Curated databases", "AI-assisted curation" = "SOORENA AI-assisted curation"),
+    breaks = c("Curated", "AI-assisted curation")
   ) +
   labs(x = "Number of entries (log scale)", y = NULL, fill = NULL) +
   base_theme +
