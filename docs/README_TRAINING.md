@@ -207,6 +207,53 @@ Stage 2 Multiclass Classification:
     ...
 ```
 
+## Cross-Validation
+
+Stratified five-fold cross-validation of either stage, using the same architecture,
+hyperparameters and checkpoint selection as the main models.
+
+### Running Cross-Validation
+
+```bash
+python scripts/python/training/cross_validate.py --stage 2
+python scripts/python/training/cross_validate.py --stage 1
+```
+
+**Runtime:** ~1 hour (Stage 2) | ~1.3 hours (Stage 1) on an Apple M4 Pro GPU
+
+If a run is interrupted, add `--resume` to skip the folds that were already saved.
+
+### What It Does
+
+1. Splits the 1,332 labeled papers into five folds, stratified by mechanism class
+2. In each fold, uses one fold as the test set and splits the rest 85/15 into training and validation
+3. Stage 1 only: adds unlabeled negatives at a 2:1 ratio to each set; no negative appears in more than one set
+4. Trains a fresh model per fold and selects the best epoch on validation F1 (Stage 1) or validation macro-F1 (Stage 2)
+5. Reports the test-fold metrics of the selected epoch, and the mean ± SD across folds
+
+The existing models, predictions and database are not modified.
+
+### Outputs
+
+Saved to `results/cross_validation/` after every fold:
+- `stage{1,2}_summary.csv` - Mean ± SD of validation and test metrics
+- `stage{1,2}_folds.csv` - Metrics of the selected epoch for each fold
+- `stage{1,2}_epochs.csv` - Validation and test metrics for every epoch
+- `stage{1,2}_test_predictions.csv` - Test-fold predictions (PMID, true, predicted)
+- `stage2_per_class.csv` - Per-class precision, recall and F1 for each fold
+
+### Results
+
+| Stage | Metric | Validation (mean ± SD) | Test (mean ± SD) |
+|---|---|---|---|
+| Stage 1 | Accuracy | 94.6 ± 0.3 | 94.1 ± 1.0 |
+| | Precision | 90.3 ± 1.2 | 89.6 ± 1.6 |
+| | Recall | 93.9 ± 1.2 | 93.1 ± 2.8 |
+| | F1 | 92.0 ± 0.3 | 91.3 ± 1.5 |
+| Stage 2 | Accuracy | 93.9 ± 1.7 | 92.9 ± 1.3 |
+| | Macro-F1 | 91.7 ± 3.7 | 90.0 ± 2.3 |
+| | Weighted-F1 | 93.9 ± 1.7 | 92.9 ± 1.3 |
+
 ## Hyperparameters
 
 Located in `config.py`:
