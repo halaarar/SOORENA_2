@@ -1,3 +1,4 @@
+# Run from the repository root: Rscript figures/report/Rfiles/Figure4_model_evaluation.R
 # =============================================================================
 # Combined Figure: Panels from Fig 4, 5, and 6
 # Panel A: Stage 1 test-set performance metrics  (originally figure_stage1 Panel A)
@@ -5,7 +6,7 @@
 # Panel C: Stage 2 class weights                 (originally figure_table4)
 # Panel D: Stage 2 overall test-set metrics      (originally figure_table6)
 # Layout:  2 × 2 patchwork, tagged A–D
-# Output:  figures/figure_combined_456.png (300 dpi)
+# Output:  figures/report/Figure4_model_evaluation.png (300 dpi)
 # =============================================================================
 
 library(ggplot2)
@@ -206,7 +207,7 @@ combined <- (
   plot_annotation(tag_levels = "A")
 
 # --- Save --------------------------------------------------------------------
-output_path <- "figures/figure_combined_456.png"
+output_path <- "figures/report/Figure4_model_evaluation.png"
 
 ggsave(
   filename = output_path,

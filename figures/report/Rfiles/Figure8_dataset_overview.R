@@ -1,3 +1,4 @@
+# Run from the repository root: Rscript figures/report/Rfiles/Figure8_dataset_overview.R
 # =============================================================================
 # Figure: Section 3.5 — Comparing Source of Autoregulation Data
 # Four-panel patchwork:
@@ -6,7 +7,7 @@
 #   C: Top 10 journals
 #   D: Prediction confidence — Stage 1 (Mechanism) and Stage 2 (Type), faceted
 # Data: shiny_app/data/predictions.db (100,065 autoregulatory entries)
-# Output: figures/figure_section35.png (300 dpi)
+# Output: figures/report/Figure8_dataset_overview.png (300 dpi)
 # =============================================================================
 
 library(ggplot2)
@@ -22,13 +23,13 @@ col_muted   <- "#6b7a89"
 col_bg      <- "#ffffff"
 
 tag_theme <- theme(
-  plot.tag        = element_text(size = 13, face = "bold", colour = col_ink),
+  plot.tag        = element_text(size = 17.6, face = "bold", colour = col_ink),
   plot.background = element_rect(fill = col_bg, colour = NA)
 )
 
-base_theme <- theme_classic(base_size = 11) +
+base_theme <- theme_classic(base_size = 14.9) +
   theme(
-    axis.text.x      = element_text(colour = col_muted, size = 9),
+    axis.text.x      = element_text(colour = col_muted, size = 12.2),
     axis.line        = element_line(colour = "#cccccc", linewidth = 0.4),
     axis.ticks       = element_line(colour = "#cccccc", linewidth = 0.4),
     panel.background = element_rect(fill = col_bg, colour = NA),
@@ -52,7 +53,7 @@ source_df <- data.frame(
 
 p_source <- ggplot(source_df, aes(x = n, y = Source, fill = Type)) +
   geom_col(width = 0.55) +
-  geom_text(aes(label = label), hjust = -0.12, size = 3.1, colour = col_ink) +
+  geom_text(aes(label = label), hjust = -0.12, size = 4.2, colour = col_ink) +
   scale_x_log10(
     labels = label_comma(),
     expand = expansion(mult = c(0, 0.3))
@@ -65,12 +66,12 @@ p_source <- ggplot(source_df, aes(x = n, y = Source, fill = Type)) +
   labs(x = "Number of entries (log scale)", y = NULL, fill = NULL) +
   base_theme +
   theme(
-    axis.text.y     = element_text(colour = col_ink, size = 9.5),
+    axis.text.y     = element_text(colour = col_ink, size = 12.8),
     axis.ticks.y    = element_blank(),
     axis.line.y     = element_blank(),
-    axis.title.x    = element_text(colour = col_ink, size = 10, margin = margin(t = 7)),
+    axis.title.x    = element_text(colour = col_ink, size = 13.5, margin = margin(t = 7)),
     legend.position = "top",
-    legend.text     = element_text(colour = col_ink, size = 9),
+    legend.text     = element_text(colour = col_ink, size = 12.2),
     plot.margin     = margin(10, 15, 10, 10)
   )
 
@@ -104,8 +105,8 @@ p_timeline <- ggplot(timeline_df, aes(x = Year, y = n)) +
   labs(x = "Publication year", y = "Number of papers") +
   base_theme +
   theme(
-    axis.title   = element_text(colour = col_ink, size = 10, margin = margin(t = 6)),
-    axis.text.y  = element_text(colour = col_muted, size = 9),
+    axis.title   = element_text(colour = col_ink, size = 13.5, margin = margin(t = 6)),
+    axis.text.y  = element_text(colour = col_muted, size = 12.2),
     plot.margin  = margin(10, 15, 10, 10)
   )
 
@@ -136,7 +137,7 @@ journals_df <- data.frame(
 
 p_journals <- ggplot(journals_df, aes(x = n, y = Journal)) +
   geom_col(fill = col_accent, width = 0.6, alpha = 0.9) +
-  geom_text(aes(label = label), hjust = -0.1, size = 2.9, colour = col_ink) +
+  geom_text(aes(label = label), hjust = -0.1, size = 3.9, colour = col_ink) +
   scale_x_continuous(
     labels = label_comma(),
     expand = expansion(mult = c(0, 0.22))
@@ -144,10 +145,10 @@ p_journals <- ggplot(journals_df, aes(x = n, y = Journal)) +
   labs(x = "Number of entries", y = NULL) +
   base_theme +
   theme(
-    axis.text.y  = element_text(colour = col_ink, size = 8.5, lineheight = 0.9),
+    axis.text.y  = element_text(colour = col_ink, size = 11.5, lineheight = 0.9),
     axis.ticks.y = element_blank(),
     axis.line.y  = element_blank(),
-    axis.title.x = element_text(colour = col_ink, size = 10, margin = margin(t = 7)),
+    axis.title.x = element_text(colour = col_ink, size = 13.5, margin = margin(t = 7)),
     plot.margin  = margin(10, 15, 10, 10)
   )
 
@@ -208,12 +209,12 @@ p_conf <- ggplot(conf_df, aes(x = bin, y = n)) +
   scale_y_continuous(labels = label_comma(), expand = expansion(mult = c(0, 0.08))) +
   scale_x_continuous(breaks = seq(0.2, 1.0, by = 0.2), expand = expansion(mult = c(0.01, 0.01))) +
   labs(x = "Confidence score", y = "Number of entries") +
-  theme_classic(base_size = 11) +
+  theme_classic(base_size = 14.9) +
   theme(
-    strip.text       = element_text(colour = col_ink, face = "bold", size = 9.5),
+    strip.text       = element_text(colour = col_ink, face = "bold", size = 12.8),
     strip.background = element_rect(fill = "#fef5f0", colour = NA),
-    axis.title       = element_text(colour = col_ink, size = 10, margin = margin(t = 6)),
-    axis.text        = element_text(colour = col_muted, size = 8.5),
+    axis.title       = element_text(colour = col_ink, size = 13.5, margin = margin(t = 6)),
+    axis.text        = element_text(colour = col_muted, size = 11.5),
     axis.line        = element_line(colour = "#cccccc", linewidth = 0.4),
     axis.ticks       = element_line(colour = "#cccccc", linewidth = 0.4),
     panel.background = element_rect(fill = col_bg, colour = NA),
@@ -235,7 +236,7 @@ combined <- (
   plot_annotation(tag_levels = "A")
 
 # --- Save --------------------------------------------------------------------
-output_path <- "figures/figure_section35.png"
+output_path <- "figures/report/Figure8_dataset_overview.png"
 
 ggsave(
   filename = output_path,

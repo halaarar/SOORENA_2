@@ -1,9 +1,10 @@
+# Run from the repository root: Rscript figures/other/Rfiles/figure_table6.R
 # =============================================================================
 # Figure: Table 6 — Overall Stage 2 test-set classification performance
 # Description: Lollipop chart showing all 7 metrics (Accuracy, Macro Precision,
 #              Macro Recall, Macro F1, Weighted Precision, Weighted Recall,
 #              Weighted F1), sorted ascending, single colour, no legend.
-# Output: figures/figure_table6.png (300 dpi)
+# Output: figures/other/figure_table6.png (300 dpi)
 # =============================================================================
 
 library(ggplot2)
@@ -76,7 +77,7 @@ p <- ggplot(table6, aes(x = Score, y = Metric)) +
   )
 
 # --- Save --------------------------------------------------------------------
-output_path <- "figures/figure_table6.png"
+output_path <- "figures/other/figure_table6.png"
 
 ggsave(
   filename = output_path,

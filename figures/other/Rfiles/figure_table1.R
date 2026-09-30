@@ -1,8 +1,9 @@
+# Run from the repository root: Rscript figures/other/Rfiles/figure_table1.R
 # =============================================================================
 # Figure: Table 1 — Final distribution of autoregulatory mechanisms
 # Description: Lollipop chart — stem length encodes count (n), dot size
 #              encodes percentage (%), label shows both. Publication quality.
-# Output: figures/figure_table1.png (300 dpi)
+# Output: figures/other/figure_table1.png (300 dpi)
 # =============================================================================
 
 library(ggplot2)
@@ -97,7 +98,7 @@ p <- ggplot(table1, aes(x = n, y = Mechanism)) +
   )
 
 # --- Save --------------------------------------------------------------------
-output_path <- "figures/figure_table1.png"
+output_path <- "figures/other/figure_table1.png"
 
 ggsave(
   filename = output_path,

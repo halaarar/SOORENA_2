@@ -74,3 +74,6 @@ shiny_app/data/*.csv
 # Local notebooks
 N.ipynb
 .Rproj.user
+
+# R console history
+.Rapp.history

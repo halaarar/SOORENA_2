@@ -1,3 +1,4 @@
+# Run from the repository root: Rscript figures/report/Rfiles/Figure3_class_distribution.R
 # =============================================================================
 # Figure: Table 3 — Per-class distribution across Train/Validation/Test/Total
 # Description: 4-panel faceted lollipop chart (2×2 grid). Each facet shows
@@ -5,7 +6,7 @@
 # Caption: Figure 2. Per-class distribution of autoregulatory mechanisms across
 #          training, validation, and test subsets of the labeled dataset
 #          (n = 1,332). X-axes are scaled independently per panel.
-# Output: figures/figure_table3.png (300 dpi)
+# Output: figures/report/Figure3_class_distribution.png (300 dpi)
 # =============================================================================
 
 library(ggplot2)
@@ -112,7 +113,7 @@ p <- ggplot(table3_long, aes(x = n, y = Mechanism)) +
   )
 
 # --- Save --------------------------------------------------------------------
-output_path <- "figures/figure_table3.png"
+output_path <- "figures/report/Figure3_class_distribution.png"
 
 ggsave(
   filename = output_path,

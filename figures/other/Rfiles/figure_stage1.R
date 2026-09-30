@@ -1,8 +1,9 @@
+# Run from the repository root: Rscript figures/other/Rfiles/figure_stage1.R
 # =============================================================================
 # Figure: Stage 1 — Two-panel figure
 # Panel A: Test performance metrics (Table 5) as a dot plot
 # Panel B: Confusion matrix with enlarged fonts, compact layout
-# Output: figures/figure_stage1.png (300 dpi)
+# Output: figures/other/figure_stage1.png (300 dpi)
 # =============================================================================
 
 library(ggplot2)
@@ -137,7 +138,7 @@ combined <- (panel_a + tag_theme) + (panel_b + tag_theme) +
   plot_annotation(tag_levels = "A")
 
 # --- Save --------------------------------------------------------------------
-output_path <- "figures/figure_stage1.png"
+output_path <- "figures/other/figure_stage1.png"
 
 ggsave(
   filename = output_path,

@@ -1,7 +1,8 @@
+# Run from the repository root: Rscript figures/other/Rfiles/figure_table4.R
 # =============================================================================
 # Figure: Table 4 — Class weights used for Stage 2 multi-class training
 # Description: Dot plot showing inverse-frequency class weights per mechanism.
-# Output: figures/figure_table4.png (300 dpi)
+# Output: figures/other/figure_table4.png (300 dpi)
 # =============================================================================
 
 library(ggplot2)
@@ -86,7 +87,7 @@ p <- ggplot(table4, aes(x = weight, y = Mechanism)) +
   )
 
 # --- Save --------------------------------------------------------------------
-output_path <- "figures/figure_table4.png"
+output_path <- "figures/other/figure_table4.png"
 
 ggsave(
   filename = output_path,

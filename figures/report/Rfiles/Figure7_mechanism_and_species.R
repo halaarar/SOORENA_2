@@ -1,3 +1,4 @@
+# Run from the repository root: Rscript figures/report/Rfiles/Figure7_mechanism_and_species.R
 # =============================================================================
 # Figure: Mechanism type and species composition, AI-assisted curation vs
 #         curated records
@@ -5,7 +6,7 @@
 #              curated dataset and AI-assisted curation, same x-axis scale.
 #              (B) Species composition of curated and AI-assisted curation
 #              records with an annotated organism, read from the app database.
-# Output: figures/figure_predicted_distribution.png (300 dpi)
+# Output: figures/report/Figure7_mechanism_and_species.png (300 dpi)
 # =============================================================================
 
 library(ggplot2)
@@ -160,7 +161,7 @@ p <- p_mech / p_species +
   plot_annotation(tag_levels = "A")
 
 # --- Save --------------------------------------------------------------------
-output_path <- "figures/figure_predicted_distribution.png"
+output_path <- "figures/report/Figure7_mechanism_and_species.png"
 
 ggsave(
   filename = output_path,
